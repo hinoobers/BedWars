@@ -1,3 +1,10 @@
 main: org.hinoob.BedWars
 version: 0.1
 name: BedWars
+
+api-version: 1.13
+
+commands:
+  bedwars:
+    aliases: [bw]
+  joingame:

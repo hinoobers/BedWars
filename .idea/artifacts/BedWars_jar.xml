@@ -3,6 +3,7 @@
     <output-path>$PROJECT_DIR$/out/artifacts/BedWars_jar</output-path>
     <root id="archive" name="BedWars.jar">
       <element id="module-output" name="BedWars" />
+      <element id="extracted-dir" path="$USER_HOME$/Downloads/lombok.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>
