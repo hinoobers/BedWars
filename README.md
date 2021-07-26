@@ -1,4 +1,4 @@
 # BedWars
 
 Private bedwars plugin
-Not available for public
+not available for public
