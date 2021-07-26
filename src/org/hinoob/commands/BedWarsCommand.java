@@ -8,6 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.hinoob.game.Game;
+import org.hinoob.game.GameState;
 import org.hinoob.manager.GameManager;
 import org.hinoob.map.GameMap;
 import org.hinoob.setup.SetupData;
@@ -35,6 +36,19 @@ public class BedWarsCommand implements CommandExecutor {
                             } else {
                                 commandSender.sendMessage(ChatColor.GREEN + "Ended!");
                                 game.end(true);
+                            }
+                        }else if(strings[0].equalsIgnoreCase("forcestart")){
+                            Game game = GameManager.findGameByPlayer((Player) commandSender);
+
+                            if (game == null) {
+                                commandSender.sendMessage(ChatColor.RED + "You must be in a game first!");
+                            } else {
+                                if(game.getState() == GameState.PLAYING){
+                                    commandSender.sendMessage(ChatColor.RED + "Game has already started!");
+                                }else{
+                                    commandSender.sendMessage(ChatColor.GREEN + "Game started!");
+                                    game.start();
+                                }
                             }
                         }else if(strings[0].equalsIgnoreCase("worldname")){
                             commandSender.sendMessage(((Player) commandSender).getLocation().getWorld().getName());

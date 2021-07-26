@@ -3,6 +3,7 @@ package org.hinoob.map;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.hinoob.BedWars;
 import org.hinoob.util.FileUtil;
@@ -20,7 +21,7 @@ public class GameMap {
     public GameMap(String worldName){
         this.worldName = worldName;
 
-        this.sourceWorldDirectory = new File(BedWars.INSTANCE.getServer().getWorldContainer(), worldName);
+        this.sourceWorldDirectory = new File(BedWars.INSTANCE.activeMapsFolder, worldName);
     }
 
     public void load(){
@@ -38,11 +39,13 @@ public class GameMap {
             this.temporaryWorld = Bukkit.getWorld(temporaryWorldDirectory.getName());
 
             temporaryWorld.setAutoSave(false);
+            temporaryWorld.getLivingEntities().forEach(Entity::remove);
         }else{
             this.temporaryWorld = Bukkit.createWorld(new WorldCreator(temporaryWorldDirectory.getName()));
 
             if(temporaryWorld != null){
                 temporaryWorld.setAutoSave(false);
+                temporaryWorld.getLivingEntities().forEach(Entity::remove);
             }
         }
 

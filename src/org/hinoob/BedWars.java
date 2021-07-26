@@ -9,6 +9,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.hinoob.commands.BedWarsCommand;
 import org.hinoob.commands.JoinGameCommand;
 import org.hinoob.game.Game;
+import org.hinoob.listener.*;
 import org.hinoob.manager.GameManager;
 import org.hinoob.map.GameMap;
 import org.hinoob.setup.SetupDataListener;
@@ -38,6 +39,13 @@ public class BedWars extends JavaPlugin {
 
         // Registering events
         this.getServer().getPluginManager().registerEvents(new SetupDataListener(), this);
+        this.getServer().getPluginManager().registerEvents(new TeamSelectorListener(), this);
+        this.getServer().getPluginManager().registerEvents(new BedBreakListener(), this);
+        this.getServer().getPluginManager().registerEvents(new CreatureSpawnListener(), this);
+        this.getServer().getPluginManager().registerEvents(new EntityDamageListener(), this);
+        this.getServer().getPluginManager().registerEvents(new WeatherKeepEvent(), this);
+        this.getServer().getPluginManager().registerEvents(new ShopListener(), this);
+        this.getServer().getPluginManager().registerEvents(new ShopOpenListener(), this);
 
         // Registering commands
         getCommand("joingame").setExecutor(new JoinGameCommand());

@@ -85,11 +85,11 @@ public class SetupDataListener implements Listener {
                     e.getPlayer().sendMessage(ChatColor.RED + "You must be looking at a bed!");
                 }
             }else if(displayName.equalsIgnoreCase("Add diamond generator")) {
-                Generator generator = new Generator(e.getPlayer().getLocation(), GeneratorType.DIAMOND);
+                Generator generator = new Generator(e.getPlayer().getLocation(), GeneratorType.DIAMOND, null);
                 setupData.generators.add(generator);
                 e.getPlayer().sendMessage(ChatColor.GREEN + "Added diamond generator!");
             }else if(displayName.equalsIgnoreCase("Add emerald generator")){
-                Generator generator = new Generator(e.getPlayer().getLocation(), GeneratorType.EMERALD);
+                Generator generator = new Generator(e.getPlayer().getLocation(), GeneratorType.EMERALD, null);
                 setupData.generators.add(generator);
                 e.getPlayer().sendMessage(ChatColor.GREEN + "Added emerald generator!");
             }else if(displayName.equalsIgnoreCase("Add Island")){
