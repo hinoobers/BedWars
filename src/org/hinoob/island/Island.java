@@ -27,6 +27,9 @@ public class Island {
     int resourceSpawnTask;
     int ironCooldown = 15, goldCooldown = 150;
 
+    private boolean alarmTrap = false, blindnessTrap = false, miningFatigueTrap = false;
+    private boolean hasSharp = false, hasProt = false;
+
     private List<Player> players = new ArrayList<>();
 
     public void setWorlds(World world){

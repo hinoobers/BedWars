@@ -9,6 +9,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.hinoob.game.Game;
 import org.hinoob.game.GameState;
+import org.hinoob.gui.impl.PersonalShopGUI;
+import org.hinoob.gui.impl.personaltabs.Tools;
 import org.hinoob.manager.GameManager;
 import org.hinoob.map.GameMap;
 import org.hinoob.setup.SetupData;
@@ -26,6 +28,11 @@ public class BedWarsCommand implements CommandExecutor {
                     if(strings.length == 1){
                         if(strings[0].equalsIgnoreCase("help")){
                             commandSender.sendMessage(ChatColor.RED + "/bedwars setup <name>");
+                            commandSender.sendMessage(ChatColor.RED + "/bedwars endgame");
+                            commandSender.sendMessage(ChatColor.RED + "/bedwars forcestart");
+                            commandSender.sendMessage(ChatColor.RED + "/bedwars worldname (Dev)");
+                            commandSender.sendMessage(ChatColor.RED + "/bedwars games (Dev)");
+                            commandSender.sendMessage(ChatColor.RED + "/bedwars openpersonaltab <tab> (Dev)");
                         }else if(strings[0].equalsIgnoreCase("setup")) {
                             commandSender.sendMessage(ChatColor.RED + "You must provide a name!");
                         }else if(strings[0].equalsIgnoreCase("endgame")) {
@@ -37,6 +44,15 @@ public class BedWarsCommand implements CommandExecutor {
                                 commandSender.sendMessage(ChatColor.GREEN + "Ended!");
                                 game.end(true);
                             }
+                        }else if(strings[0].equalsIgnoreCase("updatesb")){
+                            Game game = GameManager.findGameByPlayer((Player) commandSender);
+
+                            if (game == null) {
+                                commandSender.sendMessage(ChatColor.RED + "You must be in a game first!");
+                            } else {
+                                commandSender.sendMessage(ChatColor.GREEN + "Updated!");
+                                game.updateScoreboardStatus();
+                            }
                         }else if(strings[0].equalsIgnoreCase("forcestart")){
                             Game game = GameManager.findGameByPlayer((Player) commandSender);
 
@@ -47,11 +63,17 @@ public class BedWarsCommand implements CommandExecutor {
                                     commandSender.sendMessage(ChatColor.RED + "Game has already started!");
                                 }else{
                                     commandSender.sendMessage(ChatColor.GREEN + "Game started!");
-                                    game.start();
+                                    game.start(true);
                                 }
                             }
-                        }else if(strings[0].equalsIgnoreCase("worldname")){
+                        }else if(strings[0].equalsIgnoreCase("worldname")) {
                             commandSender.sendMessage(((Player) commandSender).getLocation().getWorld().getName());
+                        }else if(strings[0].equalsIgnoreCase("games")) {
+                            for (Game game : GameManager.getGames()) {
+                                commandSender.sendMessage(ChatColor.GRAY + game.getName() + " - " + (game.getState() == GameState.WAITING ? ChatColor.RED + "Waiting For Players" : ChatColor.GREEN + "ACTIVE"));
+                            }
+                        }else if(strings[0].equalsIgnoreCase("openpersonaltab")){
+                            commandSender.sendMessage(ChatColor.RED + "You must enter the tab's name! (Tools, etc)");
                         }else{
                             commandSender.sendMessage(ChatColor.RED + "/bedwars help");
                         }
@@ -105,6 +127,12 @@ public class BedWarsCommand implements CommandExecutor {
                                 setupData.active = false;
                                 player.getInventory().setContents(setupData.backupInventory.getContents());
                                 commandSender.sendMessage(ChatColor.GREEN + "Quit setup mode!");
+                            }
+                        }else if(strings[0].equalsIgnoreCase("openpersonaltab")) {
+                            if(strings[1].equalsIgnoreCase("tools")){
+                                ((Player) commandSender).openInventory(Tools.get((Player)commandSender));
+                            }else{
+                                commandSender.sendMessage(ChatColor.RED + "Invalid tab!");
                             }
                         }else{
                             commandSender.sendMessage(ChatColor.RED + "/bedwars help");

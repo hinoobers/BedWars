@@ -27,9 +27,13 @@ public class PersonalShopGUI implements AbstractGUI {
     public void init(){
         ItemStack blocks = new ItemBuilder(Material.valueOf(game.getIslandByPlayer(opened).getColor() + "_WOOL")).setDisplayName(ChatColor.GRAY + "Blocks").build();
         ItemStack swords = new ItemBuilder(Material.WOODEN_SWORD).setDisplayName(ChatColor.GRAY + "Swords").build();
+        ItemStack tools = new ItemBuilder(Material.STONE_PICKAXE).setDisplayName(ChatColor.GRAY + "Tools").build();
+        ItemStack utilities = new ItemBuilder(Material.TNT).setDisplayName(ChatColor.GRAY + "Utilities").build();
 
         inventory.setItem(10, blocks);
         inventory.setItem(11, swords);
+        inventory.setItem(12, tools);
+        inventory.setItem(13, utilities);
     }
 
 

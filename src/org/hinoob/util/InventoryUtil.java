@@ -1,9 +1,13 @@
 package org.hinoob.util;
 
 import lombok.experimental.UtilityClass;
+import org.bukkit.Color;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.hinoob.island.Island;
 
 @UtilityClass
 public class InventoryUtil {
@@ -36,5 +40,29 @@ public class InventoryUtil {
         }
 
         return amount;
+    }
+
+    public void giveFullArmor(Island island, Player player, Color color){
+        ItemStack boots = new ItemStack(Material.IRON_BOOTS);
+        ItemStack leggings = new ItemStack(Material.IRON_LEGGINGS);
+
+        ItemStack chestplate = new ItemStack(Material.LEATHER_CHESTPLATE);
+        LeatherArmorMeta chestplateMeta = (LeatherArmorMeta) chestplate.getItemMeta();
+        chestplateMeta.setColor(color);
+        chestplate.setItemMeta(chestplateMeta);
+
+        ItemStack helmet = new ItemStack(Material.LEATHER_HELMET);
+        LeatherArmorMeta helmetMeta = (LeatherArmorMeta) helmet.getItemMeta();
+        helmetMeta.setColor(color);
+        helmet.setItemMeta(helmetMeta);
+
+        if(island.isHasProt()){
+            boots.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 2);
+            leggings.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 2);
+            chestplate.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 2);
+            helmet.addEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, 2);
+        }
+
+        player.getInventory().setArmorContents(new ItemStack[] {boots, leggings, chestplate, helmet});
     }
 }

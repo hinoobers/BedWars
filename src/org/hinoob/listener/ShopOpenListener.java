@@ -14,6 +14,8 @@ public class ShopOpenListener implements Listener {
         if(GameManager.findGameByPlayer(e.getPlayer()) != null){
             Game game = GameManager.findGameByPlayer(e.getPlayer());
 
+            if(e.getRightClicked().getCustomName() == null) return;
+
             String displayName = ChatColor.stripColor(e.getRightClicked().getCustomName());
             if (displayName.equalsIgnoreCase("Personal Shop")) {
                 game.getPersonalShopGUI().open(e.getPlayer());

@@ -1,6 +1,7 @@
 package org.hinoob.map;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameRule;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.entity.Entity;
@@ -39,12 +40,14 @@ public class GameMap {
             this.temporaryWorld = Bukkit.getWorld(temporaryWorldDirectory.getName());
 
             temporaryWorld.setAutoSave(false);
+            temporaryWorld.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
             temporaryWorld.getLivingEntities().forEach(Entity::remove);
         }else{
             this.temporaryWorld = Bukkit.createWorld(new WorldCreator(temporaryWorldDirectory.getName()));
 
             if(temporaryWorld != null){
                 temporaryWorld.setAutoSave(false);
+                temporaryWorld.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
                 temporaryWorld.getLivingEntities().forEach(Entity::remove);
             }
         }

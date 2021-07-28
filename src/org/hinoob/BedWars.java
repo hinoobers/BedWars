@@ -1,21 +1,19 @@
 package org.hinoob;
 
-import lombok.SneakyThrows;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.block.data.type.Bed;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.hinoob.commands.BedWarsCommand;
 import org.hinoob.commands.JoinGameCommand;
+import org.hinoob.commands.LeaveGameCommand;
+import org.hinoob.commands.ShoutCommand;
 import org.hinoob.game.Game;
 import org.hinoob.listener.*;
 import org.hinoob.manager.GameManager;
-import org.hinoob.map.GameMap;
 import org.hinoob.setup.SetupDataListener;
 
 import java.io.File;
-import java.util.Objects;
 
 public class BedWars extends JavaPlugin {
 
@@ -46,10 +44,19 @@ public class BedWars extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new WeatherKeepEvent(), this);
         this.getServer().getPluginManager().registerEvents(new ShopListener(), this);
         this.getServer().getPluginManager().registerEvents(new ShopOpenListener(), this);
+        this.getServer().getPluginManager().registerEvents(new BuildListener(), this);
+        this.getServer().getPluginManager().registerEvents(new TrapListener(), this);
+        this.getServer().getPluginManager().registerEvents(new QuitListener(), this);
+        this.getServer().getPluginManager().registerEvents(new ChatListener(), this);
+        this.getServer().getPluginManager().registerEvents(new UtilitiesListener(), this);
+        this.getServer().getPluginManager().registerEvents(new InventoryBlockListener(), this);
+
 
         // Registering commands
         getCommand("joingame").setExecutor(new JoinGameCommand());
         getCommand("bedwars").setExecutor(new BedWarsCommand());
+        getCommand("leavegame").setExecutor(new LeaveGameCommand());
+        getCommand("shout").setExecutor(new ShoutCommand());
 
         System.out.println("[BedWars] Loading games");
 

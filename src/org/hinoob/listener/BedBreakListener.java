@@ -16,16 +16,23 @@ public class BedBreakListener implements Listener {
         if(GameManager.findGameByPlayer(e.getPlayer()) != null){
             Game game = GameManager.findGameByPlayer(e.getPlayer());
 
-            Island island = game.getIslands().stream().filter(p -> p.getBedLocation().distance(e.getBlock().getLocation()) < 5).findAny().get();
-            Island playerIsland = game.getIslandByPlayer(e.getPlayer());
             if(e.getBlock().getType().toString().toLowerCase().contains("bed") && e.getBlock().getType() != Material.BEDROCK){
-                if(island == playerIsland){
+
+                Island island = game.getIslands().stream().filter(p -> p.getBedLocation().distance(e.getBlock().getLocation()) <= 5).findAny().get();
+                Island playerIsland = game.getIslandByPlayer(e.getPlayer());
+
+                if(island.equals(playerIsland)){
                     e.getPlayer().sendMessage(ChatColor.RED + "You can't break your bed!");
                     e.setCancelled(true);
                 }else{
+                    game.broadcastMessage(" ");
                     game.broadcastMessage(ChatColor.valueOf(island.getColor()) + island.getColor() + ChatColor.GRAY + " team's bed was broken by " + ChatColor.valueOf(playerIsland.getColor()) + e.getPlayer().getName());
+                    game.broadcastMessage(" ");
                     island.setHasBed(false);
+                    e.getBlock().getLocation().getWorld().spigot().strikeLightning(e.getBlock().getLocation(), false);
                     e.setDropItems(false);
+
+                    game.updateScoreboardStatus();
                 }
             }
         }

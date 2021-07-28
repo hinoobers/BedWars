@@ -1,9 +1,12 @@
 package org.hinoob.game;
 
+import fr.mrmicky.fastboard.FastBoard;
+import org.bukkit.block.Block;
 import org.bukkit.*;
 import org.bukkit.entity.Panda;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Team;
 import org.hinoob.BedWars;
@@ -16,6 +19,7 @@ import org.hinoob.island.Island;
 import org.hinoob.manager.GameManager;
 import org.hinoob.map.GameMap;
 import org.hinoob.util.ConfigUtil;
+import org.hinoob.util.InventoryUtil;
 import org.hinoob.util.ItemBuilder;
 
 import java.io.File;
@@ -23,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Game {
 
@@ -33,12 +38,13 @@ public class Game {
     private List<Player> globalPlayers = new ArrayList<>();
     private List<Island> islands = new ArrayList<>();
     private List<Generator> generators = new ArrayList<>();
+    public List<Block> blocksPlaced = new ArrayList<>();
 
     public Map<Player, String> desiredTeam = new HashMap<>();
 
     public Location spawnLocation;
 
-    private int minPlayers = 2, maxPlayers = 10;
+    public int minPlayers = 2, maxPlayers = 10;
     public int maxPlayersPerTeam;
 
     private int generatorSpawnTask;
@@ -46,6 +52,8 @@ public class Game {
     private TeamSelectorGUI teamSelectorGUI = new TeamSelectorGUI(this);
     private PersonalShopGUI personalShopGUI = new PersonalShopGUI(this);
     private TeamShopGUI teamShopGUI = new TeamShopGUI(this);
+
+    public Map<Player, FastBoard> scoreboardMap = new HashMap<>();
 
     public Game(BedWars bedWars, String configurationKey, String name){
         this.name = name;
@@ -130,9 +138,34 @@ public class Game {
         return availableIsland;
     }
 
+    public Color stringToColor(String color){
+        if(color.equalsIgnoreCase("RED")){
+            return Color.RED;
+        }else if(color.equalsIgnoreCase("BLUE")){
+            return Color.BLUE;
+        }else if(color.equalsIgnoreCase("YELLOW")){
+            return Color.YELLOW;
+        }else if(color.equalsIgnoreCase("WHITE")){
+            return Color.WHITE;
+        }else if(color.equalsIgnoreCase("GREEN")){
+            return Color.GREEN;
+        }else{
+            return null;
+        }
+    }
 
-    public void start(){
+
+    public void start(boolean force){
         if(gameState == GameState.PLAYING) return; // Duplicate fix
+
+        if(!force){
+            if(globalPlayers.size() >= minPlayers){
+
+            }else{
+                return;
+            }
+        }
+
         gameState = GameState.PLAYING;
 
         globalPlayers.stream().forEach(b -> b.getInventory().clear());
@@ -164,6 +197,9 @@ public class Game {
             ItemStack woodenSword = new ItemBuilder(Material.WOODEN_SWORD).build();
 
             player.getInventory().setItem(0, woodenSword);
+
+            InventoryUtil.giveFullArmor(island, player, stringToColor(island.getColor()));
+
         }
 
         broadcastMessage(ChatColor.GREEN + "Game started!");
@@ -179,7 +215,66 @@ public class Game {
                 broadcastMessage(ChatColor.valueOf(island.getColor()) + island.getColor() + ChatColor.GRAY + " was eliminated! (No Players)");
             }
         }
+
+
+        updateScoreboardStatus();
+
         startWinCheck();
+    }
+
+    public int winTask;
+    public boolean won = false;
+
+    public void startWinCheck(){
+        winTask = Bukkit.getScheduler().scheduleSyncRepeatingTask(BedWars.INSTANCE, new Runnable() {
+            @Override
+            public void run() {
+                updateScoreboardStatus();
+                if(gameState == GameState.PLAYING){
+                    List<Island> aliveIslands = islands.stream().filter(Island::isAlive).collect(Collectors.toList());
+                    List<Player> alivePlayers = globalPlayers.stream().filter(p -> p != null && p.getGameMode() == GameMode.SURVIVAL).collect(Collectors.toList());
+                    if(aliveIslands.size() == 0 && alivePlayers.size() == 1 && !won){
+                        won = true;
+                        broadcastMessage(ChatColor.valueOf(getIslandByPlayer(alivePlayers.get(0)).getColor()) + getIslandByPlayer(alivePlayers.get(0)).getColor() + ChatColor.GOLD + " won");
+
+                        new BukkitRunnable(){
+                            public void run(){
+                                end(true);
+                            }
+                        }.runTaskLater(BedWars.INSTANCE, 2 * 20);
+                    }else if(aliveIslands.size() == 1 && alivePlayers.stream().noneMatch(p -> getIslandByPlayer(p) != aliveIslands.get(0)) && !won){
+                        won = true;
+                        broadcastMessage(ChatColor.valueOf(getIslandByPlayer(alivePlayers.get(0)).getColor()) + getIslandByPlayer(alivePlayers.get(0)).getColor() + ChatColor.GOLD + " won");
+
+                        new BukkitRunnable(){
+                            public void run(){
+                                end(true);
+                            }
+                        }.runTaskLater(BedWars.INSTANCE, 2 * 20);
+                    }
+                }
+            }
+        }, 0L, 0L);
+    }
+
+    public void updateScoreboardStatus(){
+        List<String> lines = new ArrayList<>();
+        for(Island island : islands){
+            String text = "Error";
+
+
+            if(!island.isHasBed() && !island.isAlive()){
+                text = ChatColor.RED + "✖";
+            }else if(island.isHasBed() && island.isAlive()){
+                text = ChatColor.GREEN + "✔";
+            }else if(!island.isHasBed() && island.isAlive()){
+                text = ChatColor.YELLOW + String.valueOf(island.getPlayers().stream().filter(p -> p != null && p.getGameMode() == GameMode.SURVIVAL).count());
+            }
+
+            lines.add(ChatColor.valueOf(island.getColor()) + island.getColor() + ChatColor.GRAY + " -> " + text);
+        }
+
+        updateScoreboard(lines.toArray(new String[0]));
     }
 
     private void startGeneratorTask() {
@@ -193,48 +288,23 @@ public class Game {
         }, 0L, 0L);
     }
 
-    private int winTask;
-    private boolean won = false;
-    private void startWinCheck(){
-        winTask = Bukkit.getScheduler().scheduleSyncRepeatingTask(BedWars.INSTANCE, new Runnable() {
-            @Override
-            public void run() {
-                int aliveIslands = (int) islands.stream().filter(Island::isAlive).count();
-                if(aliveIslands == 1 && !won){
-                    won = true;
-                    Island lastTeamAlive = islands.stream().filter(p -> p.isAlive()).findAny().get();
-
-                    broadcastMessage(ChatColor.valueOf(lastTeamAlive.getColor()) + " " + ChatColor.GOLD + "won");
-
-                    new BukkitRunnable(){
-                        public void run(){
-                            end(true);
-                        }
-                    }.runTaskLater(BedWars.INSTANCE, 2 * 20);
-                }else{
-                    if(!won && islands.stream().noneMatch(Island::isHasBed) && globalPlayers.stream().filter(p -> p != null && p.getGameMode() == GameMode.SURVIVAL).count() == 1){ // Nobody has a bed and 1 player is alive
-                        won = true;
-                        Player lastPlayerAlive = globalPlayers.stream().filter(p -> p != null && p.getGameMode() == GameMode.SURVIVAL).findAny().get();
-                        Island lastTeamAlive = islands.stream().filter(p -> p.getPlayers().contains(lastPlayerAlive)).findAny().get();
-
-                        broadcastMessage(ChatColor.valueOf(lastTeamAlive.getColor()) + " " + ChatColor.GOLD + "won");
-
-                        new BukkitRunnable(){
-                            public void run(){
-                                end(true);
-                            }
-                        }.runTaskLater(BedWars.INSTANCE, 2 * 20);
-                    }
-                }
-            }
-        }, 0L, 0L);
-    }
-
     public void end(boolean nextMatch){
         Bukkit.getScheduler().cancelTask(generatorSpawnTask);
         Bukkit.getScheduler().cancelTask(winTask);
 
+        for(Player player : globalPlayers){
+            if(scoreboardMap.containsKey(player)){
+                scoreboardMap.get(player).delete();
+                scoreboardMap.remove(player);
+            }
+        }
+
         if(!nextMatch){
+
+            globalPlayers.forEach(b -> b.getInventory().clear());
+            globalPlayers.forEach(b -> b.getInventory().setArmorContents(null));
+            globalPlayers.forEach(b -> b.setPlayerListName(ChatColor.WHITE + b.getName()));
+
             gameMap.delete();
 
             // Called on onDisable() ^^
@@ -245,15 +315,21 @@ public class Game {
 
             spawnLocation.setWorld(gameMap.temporaryWorld);
             islands.forEach(b -> b.setWorlds(gameMap.temporaryWorld));
+            generators.forEach(b -> b.killStand());
             generators.forEach(b -> b.location.setWorld(gameMap.temporaryWorld));
 
+            globalPlayers.forEach(b -> b.getInventory().clear());
+            globalPlayers.forEach(b -> b.getInventory().setArmorContents(null));
+            globalPlayers.forEach(b -> b.setPlayerListName(ChatColor.WHITE + b.getName()));
             globalPlayers.clear();
+
             islands.forEach(b -> b.getPlayers().clear());
             islands.forEach(b -> b.setHasBed(true));
             islands.forEach(b -> b.setAlive(true));
             islands.forEach(Island::end);
 
             won = false;
+
         }
 
         gameState = GameState.WAITING;
@@ -264,6 +340,15 @@ public class Game {
         ItemStack teamSelector = new ItemBuilder(Material.WHITE_WOOL).setDisplayName(ChatColor.GRAY + "Team Selector").build();
 
         player.getInventory().addItem(teamSelector);
+    }
+
+    public void updateScoreboard(String... lines){
+        for(Player player : globalPlayers){
+            if(scoreboardMap.containsKey(player)){
+                FastBoard playerBoard = scoreboardMap.get(player);
+                playerBoard.updateLines(lines);
+            }
+        }
     }
 
     public void addPlayer(Player player){
@@ -284,12 +369,18 @@ public class Game {
         giveTeamSelector(player);
         //Editing player data
 
+        FastBoard scoreBoard = new FastBoard(player);
+        scoreBoard.updateTitle(ChatColor.GOLD + "BedWars");
+        scoreboardMap.put(player, scoreBoard);
+
+        updateScoreboard("Waiting: " + globalPlayers.size() + "/" + minPlayers);
+
         if(globalPlayers.size() >= minPlayers){
             broadcastMessage(ChatColor.GREEN + "Game countdown of 5 seconds started!");
 
             new BukkitRunnable(){
                 public void run(){
-                    start();
+                    start(false);
                 }
             }.runTaskLater(BedWars.INSTANCE, 5 * 20);
         }

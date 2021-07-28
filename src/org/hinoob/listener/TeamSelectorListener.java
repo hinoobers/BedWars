@@ -5,6 +5,8 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -16,7 +18,7 @@ public class TeamSelectorListener implements Listener {
 
     @EventHandler
     public void onInteract(PlayerInteractEvent e){
-        if(e.getItem() != null && e.getAction().name().toLowerCase().contains("right") && GameManager.findGameByPlayer(e.getPlayer()) != null){
+        if(e.getItem() != null && e.getAction() == Action.RIGHT_CLICK_AIR && GameManager.findGameByPlayer(e.getPlayer()) != null){
             if(!e.getItem().hasItemMeta()) return;
 
             String displayName = ChatColor.stripColor(e.getItem().getItemMeta().getDisplayName());
@@ -44,7 +46,7 @@ public class TeamSelectorListener implements Listener {
                     }
                 }
 
-                if(alreadyInTeam + 1 >= game.maxPlayersPerTeam){
+                if(alreadyInTeam != 0 && alreadyInTeam + 1 >= game.maxPlayersPerTeam){
                     e.getWhoClicked().sendMessage(ChatColor.RED + "Team is full!");
                     e.getWhoClicked().closeInventory();
                 }else{
@@ -76,6 +78,14 @@ public class TeamSelectorListener implements Listener {
                 e.getPlayer().sendMessage(ChatColor.RED + "You can't drop the team selector!");
                 e.setCancelled(true);
             }
+        }
+    }
+
+    @EventHandler
+    public void onPlace(BlockPlaceEvent e){
+        if(!e.isCancelled() && e.getItemInHand().hasItemMeta() && e.getItemInHand().getItemMeta().hasDisplayName() && ChatColor.stripColor(e.getItemInHand().getItemMeta().getDisplayName()).equalsIgnoreCase("Team Selector")){
+            e.getPlayer().sendMessage(ChatColor.RED + "You can't place the team selector!");
+            e.setCancelled(true);
         }
     }
 }
