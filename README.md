@@ -1,4 +1,3 @@
 # BedWars
 
-Private bedwars plugin
-not available for public
+some of my first plugin(s), has very bad code
